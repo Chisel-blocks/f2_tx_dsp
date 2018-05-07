@@ -31,6 +31,8 @@ class usersigzeros(val n: Int, val users: Int=4) extends Bundle {
 
 class f2_tx_dsp_io(
         val outputn   : Int=9, 
+        val thermo    : Int=5,
+        val bin       : Int=4,
         val n         : Int=16, 
         val antennas  : Int=4, 
         val users     : Int=4,
@@ -57,11 +59,13 @@ class f2_tx_dsp_io(
     val tx_user_delays     = Input(Vec(antennas, Vec(users,UInt(log2Ceil(progdelay).W))))
     val tx_fine_delays     = Input(Vec(antennas,UInt(log2Ceil(finedelay).W)))
     val tx_user_weights    = Input(Vec(antennas,Vec(users,DspComplex(SInt(weightbits.W), SInt(weightbits.W)))))
-    val Z                  = Output(Vec(antennas,DspComplex(SInt(outputn.W), SInt(outputn.W))))
+    val Z                  = Output(Vec(antennas,new dac_io(thermo=thermo,bin=bin)))
 }
 
 class f2_tx_dsp (
-        outputn     : Int=9,
+        outputn    : Int=9,
+        thermo     : Int=5,
+        bin        : Int=4,
         n          : Int=16, 
         antennas   : Int=4, 
         users      : Int=4, 
@@ -164,6 +168,6 @@ class f2_tx_dsp (
 
 //This gives you verilog
 object f2_tx_dsp extends App {
-  chisel3.Driver.execute(args, () => new f2_tx_dsp(outputn=9, n=16, antennas=4, users=4, fifodepth=128 ))
+  chisel3.Driver.execute(args, () => new f2_tx_dsp(outputn=9,thermo=5, bin=4, n=16, antennas=4, users=4, fifodepth=128 ))
 }
 
