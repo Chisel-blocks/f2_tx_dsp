@@ -48,12 +48,9 @@ object tb_f2_tx_dsp {
                            ("g_scale1","1"),
                            ("g_scale2","1"),
                            ("g_scale3","1"),
-                           ("g_user_index","0"),
-                           ("g_antenna_index","0"),
                            ("g_user_spread_mode","0"),
                            ("g_user_sum_mode","0"),
                            ("g_user_select_index","0"),
-                           ("g_input_mode","0"),
                            ("g_interpolator_mode","4"),
                            ("g_dac_data_mode","2")
                            )
@@ -71,19 +68,19 @@ object tb_f2_tx_dsp {
                           //("in","clock","None","None","None","None"),
                           //("in","reset","None","None","None","None"),
                           ("out","iptr_A_ready","None","None","None","None"),
-                          ("in","iptr_A_valid","None","None","None","None"),
-                          ("in","iptr_A_bits_data_0_udata_real",inbits-1,0,"None","None"),
-                          ("in","iptr_A_bits_data_0_udata_imag",inbits-1,0,"None","None"),
-                          ("in","iptr_A_bits_data_0_uindex",uindexbits-1,0,"None","None"),
-                          ("in","iptr_A_bits_data_1_udata_real",inbits-1,0,"None","None"),
-                          ("in","iptr_A_bits_data_1_udata_imag",inbits-1,0,"None","None"),
-                          ("in","iptr_A_bits_data_1_uindex",uindexbits-1,0,"None","None"),
-                          ("in","iptr_A_bits_data_2_udata_real",inbits-1,0,"None","None"),
-                          ("in","iptr_A_bits_data_2_udata_imag",inbits-1,0,"None","None"),
-                          ("in","iptr_A_bits_data_2_uindex",uindexbits-1,0,"None","None"),
-                          ("in","iptr_A_bits_data_3_udata_real",inbits-1,0,"None","None"),
-                          ("in","iptr_A_bits_data_3_udata_imag",inbits-1,0,"None","None"),
-                          ("in","iptr_A_bits_data_3_uindex",uindexbits-1,0,"None","None"),
+                          ("in","iptr_A_valid","None","None","None","'b0"),
+                          ("in","iptr_A_bits_data_0_udata_real",inbits-1,0,"None","'b0"),
+                          ("in","iptr_A_bits_data_0_udata_imag",inbits-1,0,"None","'b0"),
+                          ("in","iptr_A_bits_data_0_uindex",uindexbits-1,0,"None","'b0"),
+                          ("in","iptr_A_bits_data_1_udata_real",inbits-1,0,"None","'b0"),
+                          ("in","iptr_A_bits_data_1_udata_imag",inbits-1,0,"None","'b0"),
+                          ("in","iptr_A_bits_data_1_uindex",uindexbits-1,0,"None","'b0"),
+                          ("in","iptr_A_bits_data_2_udata_real",inbits-1,0,"None","'b0"),
+                          ("in","iptr_A_bits_data_2_udata_imag",inbits-1,0,"None","'b0"),
+                          ("in","iptr_A_bits_data_2_uindex",uindexbits-1,0,"None","'b0"),
+                          ("in","iptr_A_bits_data_3_udata_real",inbits-1,0,"None","'b0"),
+                          ("in","iptr_A_bits_data_3_udata_imag",inbits-1,0,"None","'b0"),
+                          ("in","iptr_A_bits_data_3_uindex",uindexbits-1,0,"None","'b0"),
                           ("in","iptr_A_bits_rxindex",rxindexbits-1,0,"None","None"),
                           ("in","interpolator_controls_0_cic3derivscale",scalebits-1,0,"None","g_scale3"),
                           ("in","interpolator_controls_0_hb1scale",scalebits-1,0,"None","g_scale0"),
@@ -105,13 +102,13 @@ object tb_f2_tx_dsp {
                           ("in","interpolator_controls_3_hb2scale",scalebits-1,0,"None","g_scale1"),
                           ("in","interpolator_controls_3_hb3scale",scalebits-1,0,"None","g_scale2"),
                           ("in","interpolator_controls_3_mode",interpmodebits-1,0,"None","g_interpolator_mode"),
-                          ("in","dac_clocks_0","None","None","None","None"),
-                          ("in","dac_clocks_1","None","None","None","None"),
-                          ("in","dac_clocks_2","None","None","None","None"),
-                          ("in","dac_clocks_3","None","None","None","None"),
-                          ("in","clock_symrate","None","None","None","None"),
+                          ("dclk","dac_clocks_0","None","None","interpolator_clocks_cic3clockfast","None"),
+                          ("dclk","dac_clocks_1","None","None","interpolator_clocks_cic3clockfast","None"),
+                          ("dclk","dac_clocks_2","None","None","interpolator_clocks_cic3clockfast","None"),
+                          ("dclk","dac_clocks_3","None","None","interpolator_clocks_cic3clockfast","None"),
+                          ("dclk","clock_symrate","None","None","clkp8n","None"),
                           ("in","clock_outfifo_deq","None","None","None","None"),
-                          ("in","reset_dacfifo","None","None","None","None"),
+                          ("in","reset_dacfifo","None","None","None","'b1"),
                           ("in","user_spread_mode",spreadmodebits-1,0,"None","g_user_spread_mode"),
                           ("in","user_sum_mode_0",summodebits-1,0,"None","g_user_sum_mode"),
                           ("in","user_sum_mode_1",summodebits-1,0,"None","g_user_sum_mode"),
@@ -138,7 +135,7 @@ object tb_f2_tx_dsp {
                           ("in","dac_lut_write_vals_2_imag",outbits-1,0,"None","None"),
                           ("in","dac_lut_write_vals_3_real",outbits-1,0,"None","None"),
                           ("in","dac_lut_write_vals_3_imag",outbits-1,0,"None","None"),
-                          ("reg","dac_lut_write_en" ,"None","None","None","None"),
+                          ("reg","dac_lut_write_en" ,"None","None","None","'b0"),
                           ("in","dac_lut_write_en_0","None","None","dac_lut_write_en","None"),
                           ("in","dac_lut_write_en_1","None","None","dac_lut_write_en","None"),
                           ("in","dac_lut_write_en_2","None","None","dac_lut_write_en","None"),
@@ -271,10 +268,11 @@ object tb_f2_tx_dsp {
                           ("out","Z_3_real_t",scala.math.pow(2,thermo).toInt-2,0,"None","None"),
                           ("out","Z_3_imag_b",bin-1,0,"None","None"),
                           ("out","Z_3_imag_t",scala.math.pow(2,thermo).toInt-2,0,"None","None"),
-                          ("dclk","interpolator_clocks_cic3clockfast","None","None","clkpn","None"),
-                          ("dclk","interpolator_clocks_hb1clock_high","None","None","clkp2n","None"),
-                          ("dclk","interpolator_clocks_hb2clock_high","None","None","clkp4n","None"),
-                          ("dclk","interpolator_clocks_hb3clock_high","None","None","clkp8n","None")
+                          ("dclk","interpolator_clocks_cic3clockfast","None","None","clock","None"),
+                          ("dclk","interpolator_clocks_hb1clock_low" ,"None","None","clkp8n","None"),
+                          ("dclk","interpolator_clocks_hb1clock_high","None","None","clkp4n","None"),
+                          ("dclk","interpolator_clocks_hb2clock_high","None","None","clkp2n","None"),
+                          ("dclk","interpolator_clocks_hb3clock_high","None","None","clkpn","None")
                           )
         }
         val header="//This is a tesbench generated with scala generator\n"
@@ -314,9 +312,9 @@ object tb_f2_tx_dsp {
         val assdef="""//Assignments %n""".format()+
                      tbvars.ioseq.map{ 
                          case ("dclk"|"out"|"in",name,ul,dl,"None",init) => ""
-                         case ("dclk"|"out"|"in",name,ul,dl,"clock",init) => "assign %s=clock;\n".format(name)
-                         case ("dclk"|"out"|"in",name,ul,dl,"reset",init) => "assign %s=reset;\n".format(name)
-                         case ("dclk"|"out"|"in",name,ul,dl,assign,init) => "assign %s=io_%s;\n".format(name,assign)
+                         case ("dclk"|"out"|"in",name,ul,dl,"clock",init) => "assign io_%s=clock;\n".format(name)
+                         case ("dclk"|"out"|"in",name,ul,dl,"reset",init) => "assign io_%s=reset;\n".format(name)
+                         case ("dclk"|"out"|"in",name,ul,dl,assign,init) => "assign io_%s=io_%s;\n".format(name,assign)
                          case _ => ""
                      }.mkString
 
@@ -337,7 +335,7 @@ object tb_f2_tx_dsp {
                         |parameter integer c_ratio1=g_Rs_high/(4*g_Rs_low);
                         |parameter integer c_ratio2=g_Rs_high/(2*g_Rs_low);
                         |parameter integer c_ratio3=g_Rs_high/(g_Rs_low);
-                        |parameter RESET_TIME = 16*c_Ts;
+                        |parameter RESET_TIME = 128*c_Ts; // initially 16
                         |
                         |""".stripMargin('|')+regdef+wiredef+assdef+
                         """|
@@ -377,7 +375,7 @@ object tb_f2_tx_dsp {
                         |//Clock divider model
                         |clkdiv_n_2_4_8 clockdiv( // @[:@3.2]
                         |  .clock(clock), // @[:@4.4]
-                        |  .reset(reset), // @[:@5.4]
+                        |  .reset(io_reset_clk), // @[:@5.4] // used to be reset
                         |  .io_Ndiv(io_Ndiv), // @[:@6.4]
                         |  .io_reset_clk(io_reset_clk), // @[:@6.4]
                         |  .io_clkpn (io_clkpn), // @[:@6.4]
@@ -388,10 +386,11 @@ object tb_f2_tx_dsp {
                         |
                         |""".stripMargin('|')+dutdef+initialdef+
                         """
-                        |    #RESET_TIME
-                        |    reset=0;
+                        |    #(RESET_TIME/4)
                         |    io_reset_clk=0;
-                        |    #(16*RESET_TIME)
+                        |    #(3*RESET_TIME/4)
+                        |    reset=0;
+                        |    #(4*RESET_TIME)
                         |    memaddrcount=0;
                         |    io_reset_dacfifo=0;
                         |//Tnit the LUT
