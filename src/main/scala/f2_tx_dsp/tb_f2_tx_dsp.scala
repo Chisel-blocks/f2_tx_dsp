@@ -44,6 +44,7 @@ object tb_f2_tx_dsp {
                            ("g_outfile","\"./Z.txt\""),
                            ("g_Rs_high","16*8*20.0e6"),
                            ("g_Rs_low","20.0e6"),
+                           ("g_shift","0"),
                            ("g_scale0","1"),
                            ("g_scale1","1"),
                            ("g_scale2","1"),
@@ -63,6 +64,7 @@ object tb_f2_tx_dsp {
                           ("wire","clkp8n","None","None","None","None"),
                           ("reg","Ndiv",7,0,"None","c_ratio0"),
                           ("reg","reset_clk","None","None","None",1),
+                          ("reg","shift",1,0,"None","g_shift"),
                           ("clock","clock","None","None","None","None"),
                           ("reset","reset","None","None","None",1),
                           //("in","clock","None","None","None","None"),
@@ -377,6 +379,7 @@ object tb_f2_tx_dsp {
                         |  .clock(clock), // @[:@4.4]
                         |  .reset(io_reset_clk), // @[:@5.4] // used to be reset
                         |  .io_Ndiv(io_Ndiv), // @[:@6.4]
+                        |  .io_shift(io_shift), // @[:@6.4]
                         |  .io_reset_clk(io_reset_clk), // @[:@6.4]
                         |  .io_clkpn (io_clkpn), // @[:@6.4]
                         |  .io_clkp2n(io_clkp2n), // @[:@6.4]
@@ -386,11 +389,11 @@ object tb_f2_tx_dsp {
                         |
                         |""".stripMargin('|')+dutdef+initialdef+
                         """
-                        |    #(RESET_TIME/4)
-                        |    io_reset_clk=0;
-                        |    #(3*RESET_TIME/4)
+                        |    #(RESET_TIME)
                         |    reset=0;
-                        |    #(4*RESET_TIME)
+                        |    #(2*RESET_TIME)
+                        |    io_reset_clk=0;
+                        |    #(3*RESET_TIME)
                         |    memaddrcount=0;
                         |    io_reset_dacfifo=0;
                         |//Tnit the LUT
