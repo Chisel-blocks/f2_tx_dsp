@@ -126,9 +126,6 @@ class f2_tx_dsp (
     (tx_path,io.user_select_index).zipped.map(_.dsp_ioctrl.user_select_index:=_)
     (tx_path,io.Z).zipped.map(_.Z<>_)
 
-    //Outfifo to SerDes
-
-    
     
     val zero :: userspread :: Nil = Enum(2)
     val outputmode=RegInit(zero)
