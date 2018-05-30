@@ -45,10 +45,10 @@ object tb_f2_tx_dsp {
                            ("g_Rs_high","16*20.0e6"),
                            ("g_Rs_low","20.0e6"),
                            ("g_shift","0"),
-                           ("g_scale0","1"),
-                           ("g_scale1","1"),
-                           ("g_scale2","1"),
-                           ("g_scale3","1"),
+                           ("g_scale0","8"),
+                           ("g_scale1","2"),
+                           ("g_scale2","2"),
+                           ("g_scale3","1023"),
                            ("g_user_spread_mode","0"),
                            ("g_user_sum_mode","0"),
                            ("g_user_select_index","0"),
@@ -274,7 +274,7 @@ object tb_f2_tx_dsp {
                           ("out","io_Z_3_real_t",scala.math.pow(2,thermo).toInt-2,0,"None","None"),
                           ("out","io_Z_3_imag_b",bin-1,0,"None","None"),
                           ("out","io_Z_3_imag_t",scala.math.pow(2,thermo).toInt-2,0,"None","None"),
-                          ("dclk","io_interpolator_clocks_cic3clockfast","None","None","clock","None"),
+                          ("dclk","io_interpolator_clocks_cic3clockfast","None","None","clkfast","None"),
                           ("dclk","io_interpolator_clocks_hb1clock_low" ,"None","None","clkp8n","None"),
                           ("dclk","io_interpolator_clocks_hb1clock_high","None","None","clkp4n","None"),
                           ("dclk","io_interpolator_clocks_hb2clock_high","None","None","clkp2n","None"),
@@ -402,20 +402,33 @@ object tb_f2_tx_dsp {
                         |    io_reset_dacfifo=0;
                         |    #(200*RESET_TIME)
                         |    reset_loop=0;
-                        |//Tnit the LUT
+                        |//Init the LUT
                         |    
                         |    while (memaddrcount<2**9) begin
                         |       @(posedge clock) 
                         |       dac_lut_write_en<=1;
                         |       dac_lut_write_addr<=memaddrcount;
-                        |       io_dac_lut_write_vals_0_real<=memaddrcount; 
-                        |       io_dac_lut_write_vals_1_real<=memaddrcount;
-                        |       io_dac_lut_write_vals_2_real<=memaddrcount;
-                        |       io_dac_lut_write_vals_3_real<=memaddrcount;
-                        |       io_dac_lut_write_vals_0_imag<=memaddrcount; 
-                        |       io_dac_lut_write_vals_1_imag<=memaddrcount;
-                        |       io_dac_lut_write_vals_2_imag<=memaddrcount;
-                        |       io_dac_lut_write_vals_3_imag<=memaddrcount;
+                        |       if (memaddrcount < 2**8) begin
+                        |          io_dac_lut_write_vals_0_real<=memaddrcount+2**8; 
+                        |          io_dac_lut_write_vals_1_real<=memaddrcount+2**8;
+                        |          io_dac_lut_write_vals_2_real<=memaddrcount+2**8;
+                        |          io_dac_lut_write_vals_3_real<=memaddrcount+2**8;
+                        |          io_dac_lut_write_vals_0_imag<=memaddrcount+2**8; 
+                        |          io_dac_lut_write_vals_1_imag<=memaddrcount+2**8;
+                        |          io_dac_lut_write_vals_2_imag<=memaddrcount+2**8;
+                        |          io_dac_lut_write_vals_3_imag<=memaddrcount+2**8;
+                        |           end
+                        |
+                        |        else begin
+                        |          io_dac_lut_write_vals_0_real<=memaddrcount-2**8; 
+                        |          io_dac_lut_write_vals_1_real<=memaddrcount-2**8;
+                        |          io_dac_lut_write_vals_2_real<=memaddrcount-2**8;
+                        |          io_dac_lut_write_vals_3_real<=memaddrcount-2**8;
+                        |          io_dac_lut_write_vals_0_imag<=memaddrcount-2**8; 
+                        |          io_dac_lut_write_vals_1_imag<=memaddrcount-2**8;
+                        |          io_dac_lut_write_vals_2_imag<=memaddrcount-2**8;
+                        |          io_dac_lut_write_vals_3_imag<=memaddrcount-2**8;
+                        |        end 
                         |       @(posedge clock) 
                         |       memaddrcount=memaddrcount+1;
                         |       dac_lut_write_en<=0;
@@ -423,7 +436,7 @@ object tb_f2_tx_dsp {
                         |    initdone=1;
                         |    infile = $fopen(g_infile,"r"); // For reading
                         |    while (!$feof(infile)) begin
-                        |            @(posedge io_dac_clocks_0 )
+                        |            @(posedge clkp8n )
                         |             StatusI=$fscanf(infile, "%d\t%d\t%d\t%d\t%d\t%d\t%d\t%d\n",
                         |                             din1, din2, din3, din4,din5, din6, din7, din8);
                         |             io_iptr_A_bits_data_0_udata_real <= din1;
