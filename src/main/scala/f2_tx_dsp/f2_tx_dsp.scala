@@ -34,6 +34,7 @@ class f2_tx_dsp_io(
         val thermo    : Int=5,
         val bin       : Int=4,
         val n         : Int=16, 
+        val resolution: Int=32, 
         val antennas  : Int=4, 
         val users     : Int=4,
         val neighbours: Int=4,
@@ -43,7 +44,7 @@ class f2_tx_dsp_io(
     ) extends Bundle {
     val iptr_A             = Flipped(DecoupledIO(new iofifosigs(n=n)))
     val interpolator_clocks   =  new f2_interpolator_clocks    
-    val interpolator_controls = Vec(antennas,new f2_interpolator_controls(gainbits=10))    
+    val interpolator_controls = Vec(antennas,new f2_interpolator_controls(resolution=resolution,gainbits=10))    
     val dac_clocks         = Input(Vec(antennas,Clock()))
     val clock_symrate      = Input(Clock())
     val clock_outfifo_deq  = Input(Clock())
@@ -67,6 +68,7 @@ class f2_tx_dsp (
         thermo     : Int=5,
         bin        : Int=4,
         n          : Int=16, 
+        resolution : Int=32, 
         antennas   : Int=4, 
         users      : Int=4, 
         fifodepth  : Int=128, 

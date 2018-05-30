@@ -28,6 +28,7 @@ object tb_f2_tx_dsp {
              val uindexbits=2
              val rxindexbits=2
              val scalebits=10
+             val derivshiftbits=5
              val interpmodebits=3
              val spreadmodebits=3
              val summodebits=3
@@ -48,7 +49,8 @@ object tb_f2_tx_dsp {
                            ("g_scale0","8"),
                            ("g_scale1","2"),
                            ("g_scale2","2"),
-                           ("g_scale3","1023"),
+                           ("g_scale3","512"),
+                           ("g_cic3shift","4"),
                            ("g_user_spread_mode","0"),
                            ("g_user_sum_mode","0"),
                            ("g_user_select_index","0"),
@@ -85,24 +87,28 @@ object tb_f2_tx_dsp {
                           ("in","io_iptr_A_bits_data_3_uindex",uindexbits-1,0,"None","'b0"),
                           ("in","io_iptr_A_bits_rxindex",rxindexbits-1,0,"None","None"),
                           ("in","io_interpolator_controls_0_cic3derivscale",scalebits-1,0,"None","g_scale3"),
+                          ("in","io_interpolator_controls_0_cic3derivshift",derivshiftbits-1,0,"None","g_cic3shift"),
                           ("in","io_interpolator_controls_0_hb1scale",scalebits-1,0,"None","g_scale0"),
                           ("in","io_interpolator_controls_0_hb2scale",scalebits-1,0,"None","g_scale1"),
                           ("in","io_interpolator_controls_0_hb3scale",scalebits-1,0,"None","g_scale2"),
                           ("in","io_interpolator_controls_0_mode",interpmodebits-1,0,"None","g_interpolator_mode"),
                           ("in","io_interpolator_controls_0_reset_loop","None","None","reset_loop","None"),
                           ("in","io_interpolator_controls_1_cic3derivscale",scalebits-1,0,"None","g_scale3"),
+                          ("in","io_interpolator_controls_1_cic3derivshift",derivshiftbits-1,0,"None","g_cic3shift"),
                           ("in","io_interpolator_controls_1_hb1scale",scalebits-1,0,"None","g_scale0"),
                           ("in","io_interpolator_controls_1_hb2scale",scalebits-1,0,"None","g_scale1"),
                           ("in","io_interpolator_controls_1_hb3scale",scalebits-1,0,"None","g_scale2"),
                           ("in","io_interpolator_controls_1_mode",interpmodebits-1,0,"None","g_interpolator_mode"),
                           ("in","io_interpolator_controls_1_reset_loop","None","None","reset_loop","None"),
                           ("in","io_interpolator_controls_2_cic3derivscale",scalebits-1,0,"None","g_scale3"),
+                          ("in","io_interpolator_controls_2_cic3derivshift",derivshiftbits-1,0,"None","g_cic3shift"),
                           ("in","io_interpolator_controls_2_hb1scale",scalebits-1,0,"None","g_scale0"),
                           ("in","io_interpolator_controls_2_hb2scale",scalebits-1,0,"None","g_scale1"),
                           ("in","io_interpolator_controls_2_hb3scale",scalebits-1,0,"None","g_scale2"),
                           ("in","io_interpolator_controls_2_mode",interpmodebits-1,0,"None","g_interpolator_mode"),
                           ("in","io_interpolator_controls_2_reset_loop","None","None","reset_loop","None"),
                           ("in","io_interpolator_controls_3_cic3derivscale",scalebits-1,0,"None","g_scale3"),
+                          ("in","io_interpolator_controls_3_cic3derivshift",derivshiftbits-1,0,"None","g_cic3shift"),
                           ("in","io_interpolator_controls_3_hb1scale",scalebits-1,0,"None","g_scale0"),
                           ("in","io_interpolator_controls_3_hb2scale",scalebits-1,0,"None","g_scale1"),
                           ("in","io_interpolator_controls_3_hb3scale",scalebits-1,0,"None","g_scale2"),
