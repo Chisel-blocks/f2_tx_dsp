@@ -47,7 +47,6 @@ class f2_tx_dsp_io(
     val interpolator_controls = Vec(antennas,new f2_interpolator_controls(resolution=resolution,gainbits=10))    
     val dac_clocks         = Input(Vec(antennas,Clock()))
     val clock_symrate      = Input(Clock())
-    val clock_outfifo_deq  = Input(Clock())
     val reset_dacfifo      = Input(Bool())
     val user_spread_mode   = Input(UInt(3.W))
     val user_sum_mode      = Input(Vec(antennas,UInt(3.W)))
@@ -114,7 +113,10 @@ class f2_tx_dsp (
     tx_path.map(_.interpolator_clocks:=io.interpolator_clocks) 
     tx_path.map(_.clock_symrate:=io.clock_symrate) 
     tx_path.map{ x => (x.iptr_A,io.iptr_A.bits.data).zipped.map(_<>_.udata)}
-    io.iptr_A.ready:=true.B
+    val reg_iptr_ready = withClock(io.clock_symrate){RegInit(false.B)}
+    reg_iptr_ready:=true.B
+    io.iptr_A.ready:=reg_iptr_ready
+    
     (tx_path,io.dac_data_mode).zipped.map(_.dsp_ioctrl.dac_data_mode<>_)
     (tx_path,io.dac_lut_write_addr).zipped.map(_.dsp_ioctrl.dac_lut_write_addr<>_)
     (tx_path,io.dac_lut_write_en).zipped.map(_.dsp_ioctrl.dac_lut_write_en<>_)
