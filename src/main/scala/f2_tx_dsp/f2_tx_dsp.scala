@@ -24,7 +24,7 @@ class usersigzeros(val n: Int, val users: Int=4) extends Bundle {
     val userzero   = 0.U.asTypeOf(new usersigs(n=n,users=users))
     val udatazero  = 0.U.asTypeOf(userzero.data)
     val uindexzero = 0.U.asTypeOf(userzero.uindex)
-    val iofifozero = 0.U.asTypeOf(new iofifosigs(n=n))
+    val iofifozero = 0.U.asTypeOf(new iofifosigs(n=n,users=users))
     val datazero   = 0.U.asTypeOf(iofifozero.data)
     val rxindexzero= 0.U.asTypeOf(iofifozero.rxindex)
 }
@@ -42,7 +42,7 @@ class f2_tx_dsp_io(
         val finedelay : Int=32,
         val weightbits: Int=10
     ) extends Bundle {
-    val iptr_A             = Flipped(DecoupledIO(new iofifosigs(n=n)))
+    val iptr_A             = Flipped(DecoupledIO(new iofifosigs(n=n,users=users)))
     val interpolator_clocks   =  new f2_interpolator_clocks    
     val interpolator_controls = Vec(antennas,new f2_interpolator_controls(resolution=resolution,gainbits=10))    
     val dac_clocks         = Input(Vec(antennas,Clock()))
@@ -92,7 +92,7 @@ class f2_tx_dsp (
     val userzero   = 0.U.asTypeOf(new usersigs(n=n,users=users))
     val udatazero  = 0.U.asTypeOf(userzero.data)
     val uindexzero = 0.U.asTypeOf(userzero.uindex)
-    val iofifozero = 0.U.asTypeOf(new iofifosigs(n=n))
+    val iofifozero = 0.U.asTypeOf(new iofifosigs(n=n,users=users))
     val datazero   = 0.U.asTypeOf(iofifozero.data)
     val rxindexzero= 0.U.asTypeOf(iofifozero.rxindex)
     //-The RX:s
@@ -169,6 +169,6 @@ class f2_tx_dsp (
 
 //This gives you verilog
 object f2_tx_dsp extends App {
-  chisel3.Driver.execute(args, () => new f2_tx_dsp(outputn=9,thermo=5, bin=4, n=16, antennas=4, users=4, fifodepth=128 ))
+  chisel3.Driver.execute(args, () => new f2_tx_dsp(outputn=9,thermo=5, bin=4, n=16, antennas=4, users=16, fifodepth=128 ))
 }
 
