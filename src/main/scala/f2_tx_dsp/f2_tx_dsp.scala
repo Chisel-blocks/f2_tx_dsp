@@ -11,7 +11,7 @@ import freechips.rocketchip.util._
 import f2_interpolator._
 import f2_rx_dsp._
 import f2_tx_path._
-import prog_delay._
+//import prog_delay._
 import edge_detector._
 
 
@@ -48,6 +48,7 @@ class f2_tx_dsp_io(
     val dac_clocks         = Input(Vec(antennas,Clock()))
     val clock_symrate      = Input(Clock())
     val reset_dacfifo      = Input(Bool())
+    val reset_infifo       = Input(Bool())
     val user_spread_mode   = Input(UInt(3.W))
     val user_sum_mode      = Input(Vec(antennas,UInt(3.W)))
     val user_select_index  = Input(Vec(antennas,UInt(log2Ceil(users).W)))
@@ -70,7 +71,7 @@ class f2_tx_dsp (
         resolution : Int=32, 
         antennas   : Int=4, 
         users      : Int=4, 
-        fifodepth  : Int=128, 
+        fifodepth  : Int=16,
         neighbours : Int=4,
         progdelay  : Int=64,
         finedelay  : Int=32,
@@ -95,8 +96,17 @@ class f2_tx_dsp (
     val iofifozero = 0.U.asTypeOf(new iofifosigs(n=n,users=users))
     val datazero   = 0.U.asTypeOf(iofifozero.data)
     val rxindexzero= 0.U.asTypeOf(iofifozero.rxindex)
-    //-The RX:s
-    // Vec is required to do runtime adressing of an array i.e. Seq is not hardware structure
+    //Input Async Queue for GALS
+    val infifo = Module(new AsyncQueue(new iofifosigs(n=n, users=users),depth=fifodepth)).io
+    infifo.deq_reset:=io.reset_infifo
+    infifo.enq_reset:=io.reset_infifo
+    infifo.enq_clock:=io.clock_symrate
+    infifo.deq_clock:=io.clock_symrate
+    infifo.enq<>io.iptr_A
+    infifo.deq.ready:=true.B
+    
+    //-The TX:s
+    // Vec is required for runtime adressing of an array i.e. Seq is not hardware structure
     val tx_path  = VecInit(Seq.fill(antennas){ 
             Module ( 
                 new  f2_tx_path (
@@ -112,10 +122,7 @@ class f2_tx_dsp (
     (tx_path,io.interpolator_controls).zipped.map(_.interpolator_controls:=_)
     tx_path.map(_.interpolator_clocks:=io.interpolator_clocks) 
     tx_path.map(_.clock_symrate:=io.clock_symrate) 
-    tx_path.map{ x => (x.iptr_A,io.iptr_A.bits.data).zipped.map(_<>_.udata)}
-    val reg_iptr_ready = withClock(io.clock_symrate){RegInit(false.B)}
-    reg_iptr_ready:=true.B
-    io.iptr_A.ready:=reg_iptr_ready
+    tx_path.map{ x => (x.iptr_A,infifo.deq.bits.data).zipped.map(_<>_.udata)}
     
     (tx_path,io.dac_data_mode).zipped.map(_.dsp_ioctrl.dac_data_mode<>_)
     (tx_path,io.dac_lut_write_addr).zipped.map(_.dsp_ioctrl.dac_lut_write_addr<>_)
@@ -150,7 +157,7 @@ class f2_tx_dsp (
         for (i<- 0 to neighbours-1) {
             when( io.optr_neighbours(i).ready===true.B) {
                 io.optr_neighbours(i).valid:=withClock(io.clock_symrate){RegNext(true.B)}
-                io.optr_neighbours(i)<>withClock(io.clock_symrate){RegNext(io.iptr_A)}
+                io.optr_neighbours(i)<>withClock(io.clock_symrate){RegNext(infifo.deq)}
             }.otherwise {
                 io.optr_neighbours(i).valid:=true.B
                 io.optr_neighbours(i).bits:=iofifozero
