@@ -107,6 +107,7 @@ class f2_tx_dsp (
     
     //-The TX:s
     // Vec is required for runtime adressing of an array i.e. Seq is not hardware structure
+    // Clock is the highest frequency
     val tx_path  = VecInit(Seq.fill(antennas){ 
             Module ( 
                 new  f2_tx_path (
