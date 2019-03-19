@@ -13,6 +13,7 @@ import f2_rx_dsp._
 import f2_tx_path._
 //import prog_delay._
 import edge_detector._
+import clkmux._
 
 
 //Defined in f2_rx_dsp
@@ -49,6 +50,7 @@ class f2_tx_dsp_io(
     val clock_symrate      = Input(Clock())
     val reset_dacfifo      = Input(Bool())
     val reset_infifo       = Input(Bool())
+    val infifo_enq_clock   = Input(Clock())
     val user_spread_mode   = Input(UInt(3.W))
     val user_sum_mode      = Input(Vec(antennas,UInt(3.W)))
     val user_select_index  = Input(Vec(antennas,UInt(log2Ceil(users).W)))
@@ -100,14 +102,35 @@ class f2_tx_dsp (
     val infifo = Module(new AsyncQueue(new iofifosigs(n=n, users=users),depth=fifodepth)).io
     infifo.deq_reset:=io.reset_infifo
     infifo.enq_reset:=io.reset_infifo
-    infifo.enq_clock:=io.clock_symrate
-    infifo.deq_clock:=io.clock_symrate
     infifo.enq<>io.iptr_A
     infifo.deq.ready:=true.B
     
     //-The TX:s
     // Vec is required for runtime adressing of an array i.e. Seq is not hardware structure
     // Clock is the highest frequency
+    val bypass_indicator=Seq.fill(antennas)(Wire(Bool()))
+
+    for (ant <- 0 until antennas ) {
+        when (io.dac_data_mode(ant) === 0.U ) {
+            bypass_indicator(ant):=true.B
+        }.otherwise {
+            bypass_indicator(ant):=false.B
+        }
+    }
+    val select_fastclock= RegNext(bypass_indicator.foldRight(false.B)( !_ | _))
+    
+
+
+
+    val input_clockmux=Module(new clkmux()).io
+    //Default assignment
+    input_clockmux.c0:=(io.clock_symrate)
+    input_clockmux.c1:=(io.interpolator_clocks.cic3clockfast)
+    input_clockmux.sel:=select_fastclock
+
+    infifo.enq_clock:=io.infifo_enq_clock
+    infifo.deq_clock:=input_clockmux.co
+
     val tx_path  = VecInit(Seq.fill(antennas){ 
             Module ( 
                 new  f2_tx_path (
@@ -142,7 +165,7 @@ class f2_tx_dsp (
     val zero :: userspread :: Nil = Enum(2)
     val outputmode=RegInit(zero)
 
-    when (io.user_spread_mode === 0.U) {
+    when (( io.user_spread_mode === 0.U) || select_fastclock ) {
         outputmode := zero
     }.elsewhen (io.user_spread_mode === 1.U ) {
         outputmode := userspread
