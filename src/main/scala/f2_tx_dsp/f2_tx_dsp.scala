@@ -95,12 +95,15 @@ class f2_tx_dsp (
     val iofifozero = 0.U.asTypeOf(new iofifosigs(n=n,users=users))
     val datazero   = 0.U.asTypeOf(iofifozero.data)
     val rxindexzero= 0.U.asTypeOf(iofifozero.rxindex)
+
     //Input Async Queue for GALS
     val infifo = Module(new AsyncQueue(new iofifosigs(n=n, users=users),depth=fifodepth)).io
     infifo.deq_reset:=io.reset_infifo
     infifo.enq_reset:=io.reset_infifo
     infifo.enq_clock:=io.infifo_enq_clock
-    infifo.enq<>io.iptr_A
+    infifo.enq.bits:=io.iptr_A.bits
+    infifo.enq.valid:=io.iptr_A.valid
+    io.iptr_A.ready:=true.B  // Must be true, because we are branching
     infifo.deq.ready:=true.B
     infifo.deq_clock:=io.clock_symrate
 
@@ -109,9 +112,8 @@ class f2_tx_dsp (
     bypassfifo.deq_reset:=io.reset_infifo
     bypassfifo.enq_reset:=io.reset_infifo
     bypassfifo.enq_clock:=io.infifo_enq_clock
-    bypassfifo.enq.ready<>io.iptr_A.ready
-    bypassfifo.enq.valid<>io.iptr_A.valid
-    bypassfifo.enq.bits<>io.iptr_A.bits.data(0).udata
+    bypassfifo.enq.valid:=io.iptr_A.valid
+    bypassfifo.enq.bits:=io.iptr_A.bits.data(0).udata
     bypassfifo.deq.ready:=true.B
     
     // Bypass arrangements for DAC testing
