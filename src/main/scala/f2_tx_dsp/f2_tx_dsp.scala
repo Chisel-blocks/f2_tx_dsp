@@ -118,7 +118,8 @@ class f2_tx_dsp (
     
     // Bypass arrangements for DAC testing
     // Clock is the slowest frequency
-    val bypass_indicator=Seq.fill(antennas)(Wire(Bool()))
+    //Select state with fast undivided, unresettable master clock
+    val bypass_indicator=Seq.fill(antennas)(Reg(Bool()))
 
     for (ant <- 0 until antennas ) {
         when (io.dac_data_mode(ant) === 0.U ) {
@@ -127,7 +128,8 @@ class f2_tx_dsp (
             bypass_indicator(ant):=false.B
         }
     }
-    val select_bypassclock= withClock(io.clock_symrate){RegNext(bypass_indicator.foldRight(false.B)( _ | _))}
+    //Select state with fast undivided, unresettable master clock
+    val select_bypassclock= RegNext(bypass_indicator.foldRight(false.B)( _ | _))
 
     val input_clockmux=Module(new clkmux()).io
     //Default assignment
@@ -175,8 +177,9 @@ class f2_tx_dsp (
 
     
     val zero :: userspread :: Nil = Enum(2)
-    //With slow clock
-    val outputmode=withClock(io.clock_symrate){RegInit(zero)}
+    
+    //With the fastest_clock 
+    val outputmode=RegInit(zero)
 
     when (( io.user_spread_mode === 0.U) || select_bypassclock ) {
         outputmode := zero
