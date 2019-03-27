@@ -41,11 +41,14 @@ class f2_tx_dsp_io(
         val finedelay : Int=32,
         val weightbits: Int=10
     ) extends Bundle {
-    val iptr_A             = Flipped(DecoupledIO(new iofifosigs(n=n,users=users)))
+    val iptr_A                = Flipped(DecoupledIO(new iofifosigs(n=n,users=users)))
     val interpolator_clocks   =  new f2_interpolator_clocks    
     val interpolator_controls = Vec(antennas,new f2_interpolator_controls(resolution=resolution,gainbits=10))    
     val dac_clocks         = Input(Vec(antennas,Clock()))
     val clock_symrate      = Input(Clock())
+    val bypass_Ndiv        = Input(UInt(8.W)) //Division at maximum with nuber of users
+                                         // Consistent with the clockdivider
+    val bypass_clock       = Input(Clock())  //Clock for bypass mode
     val reset_dacfifo      = Input(Bool())
     val reset_infifo       = Input(Bool())
     val infifo_enq_clock   = Input(Clock())
@@ -96,6 +99,11 @@ class f2_tx_dsp (
     val datazero   = 0.U.asTypeOf(iofifozero.data)
     val rxindexzero= 0.U.asTypeOf(iofifozero.rxindex)
 
+    val input_clkmux=Module (new clkmux()).io
+    //Master clock is the fastest
+    input_clkmux.c0:=io.bypass_clock
+    input_clkmux.c1:=io.clock_symrate
+
     //Input Async Queue for GALS
     val infifo = Module(new AsyncQueue(new iofifosigs(n=n, users=users),depth=fifodepth)).io
     infifo.deq_reset:=io.reset_infifo
@@ -105,21 +113,11 @@ class f2_tx_dsp (
     infifo.enq.valid:=io.iptr_A.valid
     io.iptr_A.ready:=true.B  // Must be true, because we are branching
     infifo.deq.ready:=true.B
-    infifo.deq_clock:=io.clock_symrate
+    infifo.deq_clock:=input_clkmux.co
 
-    //Only data of one user will be used for testing 
-    val bypassfifo = Module(new AsyncQueue(udatazero.cloneType,depth=fifodepth)).io
-    bypassfifo.deq_reset:=io.reset_infifo
-    bypassfifo.enq_reset:=io.reset_infifo
-    bypassfifo.enq_clock:=io.infifo_enq_clock
-    bypassfifo.enq.valid:=io.iptr_A.valid
-    bypassfifo.enq.bits:=io.iptr_A.bits.data(0).udata
-    bypassfifo.deq.ready:=true.B
     
     // Bypass arrangements for DAC testing
-    // Clock is the slowest frequency
-    //Select state with fast undivided, unresettable master clock
-    val bypass_indicator=Seq.fill(antennas)(Reg(Bool()))
+    val bypass_indicator=Seq.fill(antennas)(Wire(Bool()))
 
     for (ant <- 0 until antennas ) {
         when (io.dac_data_mode(ant) === 0.U ) {
@@ -128,15 +126,12 @@ class f2_tx_dsp (
             bypass_indicator(ant):=false.B
         }
     }
-    //Select state with fast undivided, unresettable master clock
-    val select_bypassclock= RegNext(bypass_indicator.foldRight(false.B)( _ | _))
+    //Select state with combinatorial logic as this is a non-timing 
+    //cirtical false path
+    val select_bypassclock= Wire(Bool())
+    select_bypassclock:= bypass_indicator.foldRight(false.B)( _ | _)
+    input_clkmux.sel:=select_bypassclock
 
-    val input_clockmux=Module(new clkmux()).io
-    //Default assignment
-    input_clockmux.c0:=false.B.asClock
-    input_clockmux.c1:=(io.interpolator_clocks.cic3clockfast)
-    input_clockmux.sel:=select_bypassclock
-    bypassfifo.deq_clock:=input_clockmux.co
 
     //-The TX:s
     // Vec is required for runtime adressing of an array i.e. Seq is not hardware structure
@@ -154,18 +149,24 @@ class f2_tx_dsp (
     
     (tx_path,io.interpolator_controls).zipped.map(_.interpolator_controls:=_)
     tx_path.map(_.interpolator_clocks:=io.interpolator_clocks) 
+    tx_path.map(_.interpolator_clocks:=io.interpolator_clocks) 
     tx_path.map(_.clock_symrate:=io.clock_symrate) 
     tx_path.map{ x => (x.iptr_A,infifo.deq.bits.data).zipped.map(_<>_.udata)}
     //We route bypass data only to one Tx to reduce congestion
     //Route test data only to TX no. 3
     val txtoprobe=3
-    tx_path.map(_.bypass_input:=udatazero)
-    tx_path(txtoprobe).bypass_input:=bypassfifo.deq.bits
+    //tx_path.map{ x => x.bypass_input.map(_:=udatazero)}
+    //(tx_path(txtoprobe).bypass_input,infifo.deq.bits.data).zipped.map(_:=_.udata)
+    tx_path.map{ x => (x.bypass_input,infifo.deq.bits.data).zipped.map(_<>_.udata)}
+    //tx_path.map{ x => x.bypass_input.map(_:=_.udatazero)}
+    //tx_path(txtoprobe).bypass_input.map(_<>infifo.deq.bits.data.udata)
     
     (tx_path,io.dac_data_mode).zipped.map(_.dsp_ioctrl.dac_data_mode<>_)
     (tx_path,io.dac_lut_write_addr).zipped.map(_.dsp_ioctrl.dac_lut_write_addr<>_)
     (tx_path,io.dac_lut_write_en).zipped.map(_.dsp_ioctrl.dac_lut_write_en<>_)
     tx_path.map(_.dsp_ioctrl.reset_dacfifo:=io.reset_dacfifo)
+    tx_path.map(_.bypass_Ndiv:=io.bypass_Ndiv)
+    tx_path.map(_.bypass_clock:=io.bypass_clock)
     (tx_path,io.dac_clocks).zipped.map(_.dac_clock:=_)
     (tx_path,io.dac_lut_write_vals).zipped.map(_.dsp_ioctrl.dac_lut_write_val:=_)
     (tx_path,io.tx_user_delays).zipped.map(_.dsp_ioctrl.user_delays:=_)
@@ -178,8 +179,8 @@ class f2_tx_dsp (
     
     val zero :: userspread :: Nil = Enum(2)
     
-    //With the fastest_clock 
-    val outputmode=RegInit(zero)
+    //With the rate of operation, gate other clocks if reguired 
+    val outputmode=withClock(io.clock_symrate){RegInit(zero)}
 
     when (( io.user_spread_mode === 0.U) || select_bypassclock ) {
         outputmode := zero
@@ -196,8 +197,12 @@ class f2_tx_dsp (
     when ( outputmode===userspread) {
         for (i<- 0 to neighbours-1) {
             when( io.optr_neighbours(i).ready===true.B) {
-                io.optr_neighbours(i).valid:=withClock(io.clock_symrate){RegNext(true.B)}
-                io.optr_neighbours(i)<>withClock(io.clock_symrate){RegNext(infifo.deq)}
+                io.optr_neighbours(i).valid:=withClock(io.clock_symrate){
+                    RegNext(true.B)
+                }
+                io.optr_neighbours(i)<>withClock(io.clock_symrate){
+                    RegNext(infifo.deq)
+                }
             }.otherwise {
                 io.optr_neighbours(i).valid:=true.B
                 io.optr_neighbours(i).bits:=iofifozero
