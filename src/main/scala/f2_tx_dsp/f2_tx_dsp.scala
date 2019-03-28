@@ -155,9 +155,9 @@ class f2_tx_dsp (
     //We route bypass data only to one Tx to reduce congestion
     //Route test data only to TX no. 3
     val txtoprobe=3
-    //tx_path.map{ x => x.bypass_input.map(_:=udatazero)}
-    //(tx_path(txtoprobe).bypass_input,infifo.deq.bits.data).zipped.map(_:=_.udata)
-    tx_path.map{ x => (x.bypass_input,infifo.deq.bits.data).zipped.map(_<>_.udata)}
+    tx_path.map{ x => x.bypass_input.map(_:=udatazero)}
+    (tx_path(txtoprobe).bypass_input,infifo.deq.bits.data).zipped.map(_:=_.udata)
+    //tx_path.map{ x => (x.bypass_input,infifo.deq.bits.data).zipped.map(_<>_.udata)}
     //tx_path.map{ x => x.bypass_input.map(_:=_.udatazero)}
     //tx_path(txtoprobe).bypass_input.map(_<>infifo.deq.bits.data.udata)
     
