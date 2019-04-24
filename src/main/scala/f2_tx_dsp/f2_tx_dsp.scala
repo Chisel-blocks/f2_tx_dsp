@@ -9,7 +9,7 @@ import dsptools._
 import dsptools.numbers._
 import freechips.rocketchip.util._
 import f2_interpolator._
-import f2_rx_dsp._
+import f2_signal_definitions.{usersigs, iofifosigs}
 import f2_tx_path._
 import edge_detector._
 import clkmux._

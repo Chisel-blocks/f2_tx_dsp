@@ -1,0 +1,9 @@
+[submodule "f2_tx_path"]
+	path = f2_tx_path
+	url = git@bwrcrepo.eecs.berkeley.edu:fader2/chisel/f2_tx_path.git
+[submodule "f2_signal_definitions"]
+	path = f2_signal_definitions
+	url = git@bwrcrepo.eecs.berkeley.edu:fader2/chisel/f2_signal_definitions.git
+[submodule "edge_detector"]
+	path = edge_detector
+	url = git@bwrcrepo.eecs.berkeley.edu:fader2/chisel/edge_detector.git
