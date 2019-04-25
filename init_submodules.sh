@@ -3,11 +3,6 @@
 DIR="$( cd "$( dirname $0 )" && pwd )"
 git submodule update --init
 
-#!/bin/sh
-#Init submodules in this dir, if any
-DIR="$( cd "$( dirname $0 )" && pwd )"
-git submodule update --init
-
 ###Publish local the ones you need
 #cd $DIR/rocket-chip
 #git submodule update --init firrtl
@@ -24,8 +19,8 @@ git submodule update --init
 
 SUBMODULES="\
     f2_tx_path \
-    f2_signal_path \
-    f2_edge_detector \
+    f2_signal_definitions \
+    edge_detector \
     " 
 for module in $SUBMODULES; do
     cd ${DIR}/${module}
