@@ -61,9 +61,9 @@ resolvers += "Sonatype Releases" at "https://oss.sonatype.org/content/repositori
 // Provide a managed dependency on X if -DXVersion="" is supplied on the command line.
 // [TODO] is simpler clearer?
 val defaultVersions = Map(
-  "chisel3" -> "3.2-SNAPSHOT",
-  "chisel-iotesters" -> "1.2.5",
-  "dsptools" -> "1.1.4"
+  "chisel3" -> "3.1.7",
+  "chisel-iotesters" -> "1.2.9",
+  "dsptools" -> "1.1.8"
   )
 
 libraryDependencies ++= (Seq("chisel3","chisel-iotesters","dsptools").map {
@@ -71,7 +71,7 @@ libraryDependencies ++= (Seq("chisel3","chisel-iotesters","dsptools").map {
 
 
 //This is (mainly) for TheSDK testbenches, may become obsolete
-libraryDependencies += "com.gilt" %% "handlebars-scala" % "2.1.1"
+//libraryDependencies += "com.gilt" %% "handlebars-scala" % "2.1.1"
 
 libraryDependencies  ++= Seq(
 //  // Last stable release
@@ -90,7 +90,6 @@ libraryDependencies  ++= Seq(
 
 // Some common deps in BWRC projects, select if needed
 // TODO-how to figure out what version is the current and the best?
-libraryDependencies += "Chisel-blocks" %% "dsptools" % "1.1-SNAPSHOT"
 libraryDependencies += "Chisel-blocks" %% "f2_signal_definitions" % gitSubmoduleHashSnapshotVersion("f2_signal_definitions")
 libraryDependencies += "Chisel-blocks" %% "f2_tx_path" % gitSubmoduleHashSnapshotVersion("f2_tx_path")
 libraryDependencies += "Chisel-blocks" %% "edge_detector" % gitSubmoduleHashSnapshotVersion("edge_detector")
